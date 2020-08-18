@@ -1,10 +1,10 @@
-FROM fametec/bacula-base:9.6.5 AS base
+FROM connectnow/bacula-base:9.6.5 AS base
 
-FROM postgres:9.4
+FROM postgres:11
 
-MAINTAINER eduardo@fametec.com.br
+MAINTAINER connectnowconsultoria@gmail.com
 
-ENV POSTGRES_PASSWORD bacula
+ENV POSTGRES_PASSWORD WR$$segur@
 
 ENV POSTGRES_USER bacula
 

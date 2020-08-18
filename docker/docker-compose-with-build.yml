@@ -4,14 +4,14 @@ services:
 
   base: 
     build: bacula-base/
-    image: fametec/bacula-base:9.6.5
+    image: connectnow/bacula-base:9.6.5
 #    
   db:
     build: bacula-catalog/
-    image: fametec/bacula-catalog:9.6.5
+    image: connectnow/bacula-catalog:9.6.5
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: bacula
+      POSTGRES_PASSWORD: WR$$segur@
       POSTGRES_USER: bacula
       POSTGRES_DB: bacula
     # volumes:
@@ -21,7 +21,7 @@ services:
 #
   bacula-dir:
     build: bacula-dir/
-    image: fametec/bacula-director:9.6.5
+    image: connectnow/bacula-director:9.6.5
     restart: unless-stopped
     volumes:
       - ./etc:/opt/bacula/etc:ro
@@ -32,7 +32,7 @@ services:
 #
   bacula-sd:
     build: bacula-sd/
-    image: fametec/bacula-storage:9.6.5
+    image: connectnow/bacula-storage:9.6.5
     restart: unless-stopped
     depends_on:
       - bacula-dir
@@ -44,7 +44,7 @@ services:
 #
   bacula-fd:
     build: bacula-fd/
-    image: fametec/bacula-client:9.6.5
+    image: connectnow/bacula-client:9.6.5
     restart: unless-stopped
     depends_on:
       - bacula-sd
@@ -57,7 +57,7 @@ services:
 #
   baculum:
     build: baculum/
-    image: fametec/baculum:9.6.5
+    image: connectnow/baculum:9.6.5
     restart: unless-stopped
     depends_on: 
       - db

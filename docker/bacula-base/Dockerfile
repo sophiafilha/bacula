@@ -1,13 +1,13 @@
 FROM centos:8.2.2004
 
-MAINTAINER Eduardo Fraga <eduardo.fraga@fametec.com.br>
+MAINTAINER Sergio Araujo <connectnowconsultoria@gmail.com.br>
 
 ENV BACULA_VERSION 9.6.5
 
 # get your key on: https://www.bacula.org/bacula-binary-package-download/
 ENV BACULA_KEY 5cee4d079821e
 
-ENV EMAIL suporte@fametec.com.br
+ENV EMAIL connectnowconsultoria@gmail.com
 
 RUN rpm --import https://www.bacula.org/downloads/Bacula-4096-Distribution-Verification-key.asc
 

@@ -1,6 +1,6 @@
-FROM fametec/bacula-base:9.6.5
+FROM connectnow/bacula-base:9.6.5
 
-MAINTAINER eduardo@fametec.com.br
+MAINTAINER connectnowconsultoria@gmail.com
 
 VOLUME ["/opt/bacula/etc"]
 
