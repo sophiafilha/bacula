@@ -1,0 +1,32 @@
+Na falta de um servidor de email para relay das mensagens do Bacula, ou ainda no bloqueio da porta 25 por parte de seu provedor de Internet, 
+pode ser necessário configurar o envio autenticado de email para que o Bacula possa enviar suas mensagens.
+
+Depois do Postfix instalado, realize os seguintes procedimentos (no caso do CentOS instalar também a dependência – pacote: cyrus-sasl-plain):
+
+1 - nano /etc/postfix/main.cf
+
+Acrescente as linhas (apague a linha relayhost se já houver):
+
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+relayhost = [smtp.gmail.com]:587
+smtp_use_tls=yes
+ 
+ctrl + x Salve e saia do arquivo.
+
+2 - nano /etc/postfix/sasl_passwd
+
+Acrescente a seguinte linha, substituindo seu endereço de email do gmail ou seu dominio e a senha por suas credenciais:
+
+[smtp.gmail.com]:587 user@gmail.com:senha
+
+OBS: *smtp.gmail é para uma configuração do gmail, caso queira utilizar seu dominio, substitua por smtp.seudominio
+
+Execute os comandos:
+3 - postmap /etc/postfix/sasl_passwd
+4 - postfix reload
+
+Você poderá verificar eventuais mensagens de erro no arquivo /var/log/mail.log, após o término de qualquer job de backup ou restore do Bacula.
+
+5 - tail -f /var/log/mail.log

@@ -1,0 +1,284 @@
+###########################################################################################################################################
+Compilando o bacula/DependÃªncias Ubuntu 18.04 - BACULA VERSÃƒO 9.4.4
+
+# PostgreSQL adicionar repositÃ³rio do Ubuntu
+
+vim /etc/apt/sources.list.d/pgdg.list
+esc:set paste+enter
+
+# Adicionar conteÃºdo abaixo e salvar:
+deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+
+# Baixar a chave para ativar o repositÃ³rio o traÃ§o no fnal do comando faz parte
+wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | apt-key add -
+
+# Atualizar repositÃ³rio do Ubuntu
+apt-get update
+
+# InstalaÃ§Ã£o do PostgreSQL 11 e pacotes para compilaÃ§Ã£o do Bacula 
+apt-get install -y build-essential libreadline6-dev zlib1g-dev liblzo2-dev mt-st mtx postfix libacl1-dev libssl-dev postgresql-server-dev-11 postgresql-11
+
+
+# Editar arquivo de configuraÃ§Ã£o do PostgreSQL para permitir acesso ao banco de dados bacula
+vim.tiny /etc/postgresql/11/main/pg_hba.conf
+
+# Adicionar linha:
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+host    bacula      bacula      127.0.0.1/32          md5
+
+# Baixar versÃ£o nova Bacula 9.6.5
+# Baixando e instalando o Bacula
+# mkdir /usr/src/bacula
+# cd /usr/src/bacula
+
+wget --no-check-certificate https://sourceforge.net/projects/bacula/files/bacula/9.6.5/bacula-9.6.5.tar.gz/download
+
+# O nome do arquivo vai ser baixado como download renovar para bacula
+mv download bacula-9.6.5.tar.gz
+
+# Testar se o arquivo estÃ¡ ok, nÃ£o pode haver na tela, somente mostrar o conteÃºdo do arquivo.
+tar -tvzf bacula-9.6.5.tar.gz
+
+# Extrair pacote
+tar -xvzf bacula-9.6.5.tar.gz
+
+#####Dentro do diretório####
+
+# Configurar instalaÃ§Ã£o do bacula para banco de dados Postgresql dentro do diretório
+./configure --with-readline=/usr/include/readline --disable-conio --bindir=/usr/bin --sbindir=/usr/sbin --with-scriptdir=/etc/bacula/scripts --with-working-dir=/var/lib/bacula --with-logdir=/var/log --enable-smartalloc --with-postgresql --with-archivedir=/home/backup --with-job-email=suporte@seudominio.com.br --with-hostname=127.0.0.1
+
+# Compilar e instalar
+make -j8 && make install && make install-autostart
+
+#Verificar permissões dos arquivos instalados
+ls -lh /etc/bacula
+chmod +rx /etc/bacula -R
+
+
+# Logar novamente no Postgresql com usuario postgresql - ObrigatÃ³rio
+su - postgres
+
+# Dentro do diretório com usuário postgre
+
+#postgres@srvbacula: cd /home/connectnow/bacula-9.6.5
+
+# Acessar diretÃ³rio que contem os arquivos de criaÃ§Ã£o do banco de dados do bacula
+postgres@srvbacula cd/home/connectnow/bacula-9.6.5/src/cats/
+
+# Criar banco de dados do bacula e tabelas
+./create_postgresql_database
+./make_postgresql_tables
+./grant_postgresql_privileges
+
+logout
+
+#pode sair e entrar com usuário root novamente
+ ^D
+ 
+# Ativar serviÃ§os do bacula no boot da mÃ¡quina
+systemctl enable bacula-dir
+systemctl enable bacula-sd
+systemctl enable bacula-fd
+ 
+#Ver Status do Bacula
+service bacula-dir status
+
+#Ativar o serviço bacula
+service bacula-dir start
+service bacula-sd start
+service bacula-fd start
+
+# CriaÃ§Ã£o de diretÃ³rios Finais log e etc..
+mkdir /var/run/bacula/  
+mkdir /var/log/bacula/  
+touch /var/log/bacula/bacula.log
+chown backup.backup /home/backup
+
+#Criar usuário Bacula
+# Adicionar senha para o usuÃ¡rio bacula banco de dados
+
+# Logar com o usuÃ¡rio postgres - ObrigatÃ³rio.
+su postgres
+
+# Acessar console do Postgresql no banco de dados bacula
+psql 
+
+# Digitar dentro do console do PostgreSQL
+alter user bacula with password 'bacula';
+
+# Sair do console do PostgreSQL
+\q
+
+# Exit para voltar para o console de super usuÃ¡rio
+^d
+exit
+
+# Arquivo de configuraÃ§Ã£o do Bacula vim /etc/bacula/bacula-dir.conf e ajustar a linha de conexÃ£o com banco de dados, deixar conforme abaixo:
+dbname = "bacula"; dbuser = "bacula"; dbpassword = "bacula"; dbaddress = "127.0.0.1"
+
+##Acessar banco bacula
+
+#Usuário
+su postgres
+
+#Entrar no banco
+psql bacula
+
+#Alterar senha no banco
+alter user bacula with password 'skellerbacul27';
+
+# Inicializar serviÃ§os do Bacula, se gerar erro tentar rodar novamente.
+service bacula-dir restart
+service bacula-sd restart
+service bacula-fd restart
+
+#Consulta os logs
+tail -f /var/log/bacula.log
+
+# Logar no Bacula via bconsole.
+bconsole
+status director
+
+# Se tudo estiver ok vocÃª terÃ¡ acesso ao console do Bacula
+
+# FIM
+___________________________________________________________________________________
+
+#Instalação Baculum Interface WEB para Bacula
+wget -qO - http://bacula.org/downloads/baculum/baculum.pub | apt-key add -
+
+# Adicionar repositórios no sources.list
+echo "
+ deb [ arch=amd64 ] http://bacula.org/downloads/baculum/stable/ubuntu bionic main
+ deb-src http://bacula.org/downloads/baculum/stable/ubuntu bionic main
+ " > /etc/apt/sources.list.d/baculum.list
+
+#Atualise os pacotes
+apt update
+
+#Instalar pacotes e dependências
+apt-get install php-bcmath php7.2-mbstring baculum-api baculum-api-apache2 baculum-common bacula-console baculum-web baculum-web-apache2
+
+#Permissões Apache 
+echo "Defaults:apache "'!'"requiretty
+ www-data ALL=NOPASSWD: /usr/sbin/bconsole
+ www-data ALL=NOPASSWD: /usr/sbin/bdirjson
+ www-data ALL=NOPASSWD: /usr/sbin/bsdjson
+ www-data ALL=NOPASSWD: /usr/sbin/bfdjson
+ www-data ALL=NOPASSWD: /usr/sbin/bbconsjson
+ " > /etc/sudoers.d/baculum
+
+mkdir /etc/bacula/working
+chown -R www-data:bacula /etc/bacula/working
+chmod -R g+rwx /etc/bacula/working
+chmod 777 /etc/bacula/*
+
+# Habilitar Módulo do Apache
+a2enmod rewrite
+
+#Ativar dois site novos no Apache
+a2ensite baculum-web baculum-api
+
+#Restart Apache
+systemctl restart apache2
+
+#Alterar Configs do PostgreSQL 11
+sed -i 's/ident/trust/g; s/peer/trust/g' /etc/postgresql/11/main/pg_hba.conf
+
+#Reiniciar PostgreSQL
+service postgresql restart
+___________________________________________________________________________________
+
+#Portas e serviços
+netstat -ptln
+
+#Erro no bconsole as senhas estão diferentes nos arquivos
+vim /etc/bacula/bacula-dir.conf 
+vim /etc/bacula/bconsole.conf
+____________________________FIM_____________________________________________________
+
+####Instalação do Cliente Windows####
+
+#Baixe o Binário para Windows
+https://www.bacula.org/download/5302/
+
+#Install Custom
+Selecione: Client e Plugins
+
+#Entre com o dir name
+srvbacula-dir 
+
+#Após a instalação libere no firewall do Windows as portas entrada 9102 e saída 9101-9102 abra o arquivo de configuração como administrador no menu iniciar
+Edit Client Configuration
+
+
+
+#Em "FileDaemon" no arquivo de config.
+Renomeie o nome do cliente 
+
+#Em "Director" no arquivo de config.
+crie uma Password
+
+#Salve o arquivo e reinicie o serviço.
+
+#Atualise o status no Baculum Web
+
+
+#### SERVIDOR BACULA SKELLER ###
+
+#Nome do Servidor:
+srvbacula
+
+#Pick a username: connectnow
+
+#Passwd
+WR@#skeller27
+WR@#skeller27
+
+#Porta SSH
+3322
+
+#Banco de dados
+
+DB: bacula
+User: bacula
+passwd: skellerbacul27
+_
+#Senha da API 
+WR@#skeller27
+
+#Usuário web
+usuário: skelleradmin
+Passwd: WR$$skeller27
+
+###Editar o arquivo de configuração do SSH usando o comando abaixo:###
+
+sudo vim /etc/ssh/sshd_config
+
+###Reiniciar o serviço do SSH usando o comando abaixo:###
+
+sudo /etc/init.d/ssh restart
+____________________________________________________________________________________
+
+###ADICIONANDO NOVO POOL DE VOLUME
+
+#Editando arquivo bacula-dir.conf
+nano/etc/bacula/bacula-dir.conf
+
+#incluír configuração do pool 
+
+Pool {
+  Name = "Funcionario"
+  PoolType = "Backup"
+  LabelFormat = "${Client}-${Day+:p/2/0/r}${Month+:p/2/0/r}${Year}-${Hour+:p/2/0/r}${Minute+:p/2/0/r}-${Level}"
+  MaximumVolumes = 100
+  MaximumVolumeBytes = 53687091200
+  VolumeRetention = 31536000
+  AutoPrune = yes
+  Recycle = yes
+}
+
+
+#reiniciando o bacula-dir
+
+service bacula-dir restart 
