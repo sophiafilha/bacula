@@ -1,4 +1,4 @@
-FROM connectnow/bacula-base:9.6.5
+FROM sophiafilha/bacula-base:9.6.5
 
 RUN dnf install -y bacula-cloud-storage --exclude=bacula-mysql
 

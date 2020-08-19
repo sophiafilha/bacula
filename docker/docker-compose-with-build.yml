@@ -4,11 +4,11 @@ services:
 
   base: 
     build: bacula-base/
-    image: connectnow/bacula-base:9.6.5
+    image: sophiafilha/bacula-base:9.6.5
 #    
   db:
     build: bacula-catalog/
-    image: connectnow/bacula-catalog:9.6.5
+    image: sophiafilha/bacula-catalog:9.6.5
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: WR$$segur@
@@ -21,7 +21,7 @@ services:
 #
   bacula-dir:
     build: bacula-dir/
-    image: connectnow/bacula-director:9.6.5
+    image: sophiafilha/bacula-director:9.6.5
     restart: unless-stopped
     volumes:
       - ./etc:/opt/bacula/etc:ro
@@ -32,7 +32,7 @@ services:
 #
   bacula-sd:
     build: bacula-sd/
-    image: connectnow/bacula-storage:9.6.5
+    image: sophiafilha/bacula-storage:9.6.5
     restart: unless-stopped
     depends_on:
       - bacula-dir
@@ -44,7 +44,7 @@ services:
 #
   bacula-fd:
     build: bacula-fd/
-    image: connectnow/bacula-client:9.6.5
+    image: sophiafilha/bacula-client:9.6.5
     restart: unless-stopped
     depends_on:
       - bacula-sd
@@ -57,7 +57,7 @@ services:
 #
   baculum:
     build: baculum/
-    image: connectnow/baculum:9.6.5
+    image: sophiafilha/baculum:9.6.5
     restart: unless-stopped
     depends_on: 
       - db
