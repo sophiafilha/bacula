@@ -4,7 +4,7 @@ services:
 #    
   db:
     build: bacula-catalog/
-    image: sophiafilha/bacula-catalog:9.6.5
+    image: fametec/bacula-catalog:9.6.5
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: WR$$segur@
